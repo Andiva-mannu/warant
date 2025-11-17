@@ -44,17 +44,21 @@
   </table>
 
   <script>
-    const apiBase = '/api/users';
+    const apiBase = '/users/data';
     let editId = null;
 
-    function getAuthHeaders() {
-      // roll back token-based headers: rely on session cookie (credentials:'same-origin')
-      return {};
+    function getAuthHeaders(isJson = false) {
+      // Use the personal access token stored in localStorage
+      const token = localStorage.getItem('api_token');
+      if (!token) { alert('Not authenticated — please login'); window.location = '/login'; return {}; }
+      const headers = { 'Authorization': 'Bearer ' + token };
+      if (isJson) headers['Content-Type'] = 'application/json';
+      return headers;
     }
 
     async function fetchUsers(){
-      const headers = getAuthHeaders();
-      const res = await fetch(apiBase, {credentials:'same-origin', headers});
+  const headers = getAuthHeaders(false);
+  const res = await fetch(apiBase, { headers });
       if(!res.ok){ alert('Could not fetch users'); return; }
       const json = await res.json();
       const tbody = document.querySelector('#users-table tbody'); tbody.innerHTML='';
@@ -79,8 +83,8 @@
       const password_confirm = document.getElementById('u-password-confirm').value;
       const is_admin = document.getElementById('u-is-admin').checked;
       const payload = {name,email,password,is_admin};
-  const headers = Object.assign({'Content-Type':'application/json'}, getAuthHeaders());
-  const opts = {method: editId? 'PUT':'POST', headers, credentials:'same-origin', body: JSON.stringify(payload)};
+  const headers = getAuthHeaders(true);
+  const opts = {method: editId? 'PUT':'POST', headers, body: JSON.stringify(payload)};
       const url = editId? `${apiBase}/${editId}`: apiBase;
       const res = await fetch(url, opts);
       if(!res.ok){ alert('Save failed'); return }
@@ -90,11 +94,11 @@
     document.querySelector('#users-table').addEventListener('click', async (e)=>{
       if(e.target.classList.contains('delete')){
         const id = e.target.dataset.id; if(!confirm('Delete user?')) return;
-  const res = await fetch(`${apiBase}/${id}`, {method:'DELETE', credentials:'same-origin', headers: getAuthHeaders()});
+  const res = await fetch(`${apiBase}/${id}`, {method:'DELETE', headers: getAuthHeaders(false)});
         if(!res.ok){ alert('Delete failed'); return } fetchUsers();
       }
       if(e.target.classList.contains('edit')){
-        const id = e.target.dataset.id; const r = await fetch(`${apiBase}/${id}`, {credentials:'same-origin', headers: getAuthHeaders()}); if(!r.ok){ alert('Failed'); return }
+  const id = e.target.dataset.id; const r = await fetch(`${apiBase}/${id}`, { headers: getAuthHeaders(false) }); if(!r.ok){ alert('Failed'); return }
         const j = await r.json(); const u = j.data || j;
         editId = u.id; document.getElementById('u-name').value = u.name; document.getElementById('u-email').value = u.email; document.getElementById('u-password').value=''; document.getElementById('u-is-admin').checked = u.is_admin;
         document.getElementById('form-title').textContent='Edit user'; document.getElementById('form-wrap').style.display='block';

@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // CRUD for the logged-in user's warranties
     Route::apiResource('warranties', WarrantyController::class);
-
+    Route::patch('warranties/{warranty}/claim', [WarrantyController::class, 'claim']);
     // CRUD for managing users (admin-only)
     // Include index, show, store, update, destroy. Creating users can be done by admin via POST /api/users
     Route::apiResource('users', UserController::class)->only([

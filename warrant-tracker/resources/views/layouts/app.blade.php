@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{{ config('app.name', 'Warrant') }}</title>
     <style>
@@ -38,5 +39,24 @@
       </div>
     </div>
     
+    <!-- If a token was flashed by the server during redirect-after-login, persist it to localStorage -->
+    @if(session('api_token'))
+    <script>
+      try {
+        localStorage.setItem('api_token', {!! json_encode(session('api_token')) !!});
+      } catch(e) { /* ignore storage errors */ }
+    </script>
+    @endif
+
+    <script>
+      // Remove token from localStorage when logging out via the logout form
+      document.addEventListener('DOMContentLoaded', function(){
+        var lf = document.getElementById('logout-form');
+        if(lf){
+          lf.addEventListener('submit', function(){ try{ localStorage.removeItem('api_token'); } catch(e){} });
+        }
+      });
+    </script>
+
   </body>
 </html>

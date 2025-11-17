@@ -20,10 +20,13 @@ return new class extends Migration
             
             // Foreign key to the product this warranty is for
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            
+            $table->string('customer_name');
             $table->string('serial_number')->nullable()->unique();
             $table->date('purchase_date');
             $table->integer('duration_months'); // e.g., 12, 24, 36
+            $table->enum('status', ['active', 'claimed', 'expired'])
+                  ->default('active')
+                  ->after('expiry_date');
             $table->date('expiry_date')->as('DATE(purchase_date + INTERVAL \'1 MONTH\' * duration_months)'); // Calculated expiry date for Postgres
             $table->string('provider'); // e.g., "Manufacturer", "Best Buy"
             $table->text('notes')->nullable();

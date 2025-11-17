@@ -11,12 +11,15 @@ class Warranty extends Model
 
     protected $fillable = [
         'user_id',
+        'customer_name',
         'product_id',
         'serial_number',
         'purchase_date',
         'duration_months',
         'provider',
         'notes',
+        'expiry_date',
+        'status',
     ];
 
     /**

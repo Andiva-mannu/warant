@@ -22,6 +22,15 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+            // create a personal access token so the frontend can use token-based auth
+            try {
+                $token = $request->user()->createToken('web-token')->plainTextToken;
+                // Flash token into session so the layout can persist it into localStorage
+                $request->session()->flash('api_token', $token);
+            } catch (\Throwable $e) {
+                // If token creation fails for any reason, continue with session login.
+            }
+
             return redirect()->intended(route('users.index'));
         }
 
